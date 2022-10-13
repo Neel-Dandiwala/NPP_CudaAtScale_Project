@@ -1,7 +1,7 @@
 # CUDAatScaleForTheEnterpriseCourseProjectTemplate
 This is a template for the course project for the CUDA at Scale for the Enterprise
 
-## Project Description
+## Project Description ROLLIN ROLLIN ROLLIN
 
 Beyond just being a template for course members, this project can be used by non-course members as the general structure for CUDA projects.
 
