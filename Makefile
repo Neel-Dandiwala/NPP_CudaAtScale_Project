@@ -3,8 +3,8 @@ CUDA_LIB_DIR = $(CUDA_ROOT_DIR)/lib64
 CUDA_INC_DIR = $(CUDA_ROOT_DIR)/include
 
 SRC_DIR = src
-OBJ_DIR = src
-INC_DIR = include
+OBJ_DIR = bin
+INC_DIR = lib
 
 EXE = kmeans_seg_npp
 OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/image_io.o $(OBJ_DIR)/image_copy.o \
