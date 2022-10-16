@@ -1,6 +1,5 @@
-/* 
- *
- *
+/*****
+ * 
  */
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -25,47 +24,21 @@
 #include <helper_cuda.h>
 #include <helper_string.h>
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#define STRCASECMP _stricmp
-#define STRNCASECMP _strnicmp
-#else
-#define STRCASECMP strcasecmp
-#define STRNCASECMP strncasecmp
-#endif
-
-inline int cudaDeviceInit(int argc, const char **argv)
-{
-  int deviceCount;
-  checkCudaErrors(cudaGetDeviceCount(&deviceCount));
-
-  if (deviceCount == 0)
-  {
-    std::cerr << "CUDA error: no devices supporting CUDA." << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  int dev = findCudaDevice(argc, argv);
-
-  cudaDeviceProp deviceProp;
-  cudaGetDeviceProperties(&deviceProp, dev);
-  std::cerr << "cudaSetDevice GPU" << dev " = " << deviceProp.name << std::endl;
-  checkCudaErrors(cudaSetDevice(dev));
-
-  return dev;
-}
-
-bool printNPPinfo(int argc, char *argv[])
+bool printfNPPinfo(int argc, char *argv[])
 {
   const NppLibraryVersion *libVer = nppGetLibVersion();
 
-  printf("NPP Library Version: %d.%d.%d \n", libVer->major, libVer->minor, libVer->build);
+  printf("NPP Library Version %d.%d.%d\n", libVer->major, libVer->minor,
+         libVer->build);
 
   int driverVersion, runtimeVersion;
   cudaDriverGetVersion(&driverVersion);
   cudaRuntimeGetVersion(&runtimeVersion);
 
-  printf("    CUDA Driver Version: %d.%d \n", driverVersion / 1000, (driverVersion % 100) / 10);
-  printf("    CUDA Runtime Version: %d.%d \n", runtimeVersion / 1000, (runtimeVersion % 100) / 10);
+  printf("  CUDA Driver  Version: %d.%d\n", driverVersion / 1000,
+         (driverVersion % 100) / 10);
+  printf("  CUDA Runtime Version: %d.%d\n", runtimeVersion / 1000,
+         (runtimeVersion % 100) / 10);
 
   // Min spec is SM 1.0 devices
   bool bVal = checkCudaCapabilities(1, 0);
@@ -74,15 +47,13 @@ bool printNPPinfo(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-
   printf("%s Starting...\n\n", argv[0]);
 
   try
   {
-
     std::string sFilename;
-    char *filePath = NULL;
-   
+    char *filePath;
+
     findCudaDevice(argc, (const char **)argv);
 
     if (printfNPPinfo(argc, argv) == false)
@@ -93,41 +64,49 @@ int main(int argc, char *argv[])
     if (checkCmdLineFlag(argc, (const char **)argv, "input"))
     {
       getCmdLineArgumentString(argc, (const char **)argv, "input", &filePath);
-    } else {
-      filePath = sdkFindFilePath("Lena.pgm", argv[0]);
+    }
+    else
+    {
+      filePath = sdkFindFilePath("landscape.pgm", argv[0]);
     }
 
     if (filePath)
     {
       sFilename = filePath;
-
-      int file_errors = 0;
-      std::ifstream infile(sFilename.data(), std::ifstream::in);
-
-      if (infile.good())
-      {
-        std::cout << "Opened: <" << sFilename.data() << ">" std::endl;
-        file_errors = 0;
-        infile.close();
-      }
-
-      if (file_errors > 0)
-      {
-        exit(EXIT_FAILURE);
-      }
     }
     else
     {
+      sFilename = "landscape.pgm";
+    }
 
-      sFilename = "Lena.pgm";
+    // if we specify the filename at the command line, then we only test
+    // sFilename[0].
+    int file_errors = 0;
+    std::ifstream infile(sFilename.data(), std::ifstream::in);
 
-      std::cout << "No input filename given" << std::endl;
+    if (infile.good())
+    {
+      std::cout << "histEqualisation opened: <" << sFilename.data()
+                << "> successfully!" << std::endl;
+      file_errors = 0;
+      infile.close();
+    }
+    else
+    {
+      std::cout << "histEqualisation unable to open: <" << sFilename.data() << ">"
+                << std::endl;
+      file_errors++;
+      infile.close();
+    }
+
+    if (file_errors > 0)
+    {
       exit(EXIT_FAILURE);
     }
 
     std::string sResultFilename = sFilename;
 
-    std::string::size_type dot = sResultFilename.rfind(".");
+    std::string::size_type dot = sResultFilename.rfind('.');
 
     if (dot != std::string::npos)
     {
@@ -139,10 +118,10 @@ int main(int argc, char *argv[])
     if (checkCmdLineFlag(argc, (const char **)argv, "output"))
     {
       char *outputFilePath;
-      getCmdLineArgumentString(argc, (const char **)argv, "output", &ouputFilePath);
+      getCmdLineArgumentString(argc, (const char **)argv, "output",
+                               &outputFilePath);
       sResultFilename = outputFilePath;
     }
-
     // Host image object for an 8-bit grayscale image
     npp::ImageCPU_8u_C1 oHostSrc;
     // Load gray-scale image from the disk
@@ -173,10 +152,10 @@ int main(int argc, char *argv[])
 
     // Compute the levels values on host // LevelCount works as nLevel here
     Npp32s levelsHost[levelCount];
-    NPP_CHECK_CUDA(nppiEvenLevelsHost_32s(levelsHost, levelCount, 0, binCount));
+    NPP_CHECK_NPP(nppiEvenLevelsHost_32s(levelsHost, levelCount, 0, binCount));
 
     // Compute the histogram  // histDevice acts as *pHist here, oDeviceSrc.pitch() as nSrcStep(int)
-    NPP_CUDA_CUDA(nppiHistogramEven_8u_C1R(oDeviceSrc.data(), oDeviceSrc.pitch(), oSizeROI, histDevice, levelCount, 0, binCount, pDeviceBuffer));
+    NPP_CHECK_NPP(nppiHistogramEven_8u_C1R(oDeviceSrc.data(), oDeviceSrc.pitch(), oSizeROI, histDevice, levelCount, 0, binCount, pDeviceBuffer));
 
     // copy histogram and levels to host memory
     Npp32s histHost[binCount];
@@ -201,7 +180,7 @@ int main(int argc, char *argv[])
         totalSum = 1;
       }
 
-      float mulitplier = 1.0f / float(oSizeROI.width * oSizeROI.height) * 0xFF;
+      float multiplier = 1.0f / float(oSizeROI.width * oSizeROI.height) * 0xFF;
 
       Npp32s runningSum = 0;
       Npp32s *pLookupTable = lutHost;
@@ -210,7 +189,7 @@ int main(int argc, char *argv[])
       {
         *pLookupTable = (Npp32s)(runningSum * multiplier + 0.5f);
         pLookupTable++;
-        runningSum += *pHostHistogram
+        runningSum += *pHostHistogram;
       }
 
       lutHost[binCount] = 0xFF; // last element is always 1
@@ -239,7 +218,7 @@ int main(int argc, char *argv[])
   catch (npp::Exception &rException)
   {
     std::cerr << "Program error! The following exception ocurred: \n";
-    std::cerr << rEsception << std::endl;
+    std::cerr << rException << std::endl;
     std::cerr << "Aborting..." << std::endl;
     exit(EXIT_FAILURE);
   }
