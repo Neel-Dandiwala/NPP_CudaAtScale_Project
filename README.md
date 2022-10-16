@@ -28,10 +28,6 @@ Output pertaining to small image (266.6KB) <br />
 Output pertaining to large image (17.09MB) <br />
 ![large_image_output](./data/landscape_HUGE_histEq_README.png)
 
-
-```INSTALL```
-This file should hold the human-readable set of instructions for installing the code so that it can be executed. If possible it should be organized around different operating systems, so that it can be done by as many people as possible with different constraints.
-
 ```Makefile```
 The rudimentary scripts for building the project's code in an automatic fashion are mentioned in this file. The user can individually build, run and clean the files and executables or run the command named all to execute each operation. 
 
