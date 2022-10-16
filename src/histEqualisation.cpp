@@ -82,8 +82,7 @@ int main(int argc, char *argv[])
 
     std::string sFilename;
     char *filePath = NULL;
-    int k = 16;
-
+   
     findCudaDevice(argc, (const char **)argv);
 
     if (printfNPPinfo(argc, argv) == false)
@@ -94,6 +93,8 @@ int main(int argc, char *argv[])
     if (checkCmdLineFlag(argc, (const char **)argv, "input"))
     {
       getCmdLineArgumentString(argc, (const char **)argv, "input", &filePath);
+    } else {
+      filePath = sdkFindFilePath("Lena.pgm", argv[0]);
     }
 
     if (filePath)
@@ -118,7 +119,7 @@ int main(int argc, char *argv[])
     else
     {
 
-      // sFilename = "teapot512.pgm";
+      sFilename = "Lena.pgm";
 
       std::cout << "No input filename given" << std::endl;
       exit(EXIT_FAILURE);
